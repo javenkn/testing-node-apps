@@ -135,3 +135,36 @@ test('setListItem responds with 403 if the list item does not belong to the user
   `)
   expect(res.json).toHaveBeenCalledTimes(1)
 })
+
+test(`getListItems returns a user's list items`, async () => {
+  const user = buildUser()
+  const books = [buildBook(), buildBook()]
+  const userListItems = [
+    buildListItem({ownerId: user.id, bookId: books[0].id}),
+    buildListItem({ownerId: user.id, bookId: books[1].id}),
+  ]
+
+  booksDB.readManyById.mockResolvedValueOnce(books)
+  listItemsDB.query.mockResolvedValueOnce(userListItems)
+
+  const req = buildReq({user})
+  const res = buildRes()
+
+  await listItemsController.getListItems(req, res)
+
+  expect(listItemsDB.query).toHaveBeenCalledWith({ownerId: user.id})
+  expect(listItemsDB.query).toHaveBeenCalledTimes(1)
+
+  expect(booksDB.readManyById).toHaveBeenCalledWith([
+    userListItems[0].bookId,
+    userListItems[1].bookId,
+  ])
+  expect(booksDB.readManyById).toHaveBeenCalledTimes(1)
+
+  expect(res.json).toHaveBeenCalledWith({
+    listItems: [
+      {...userListItems[0], book: books[0]},
+      {...userListItems[1], book: books[1]},
+    ],
+  })
+})
