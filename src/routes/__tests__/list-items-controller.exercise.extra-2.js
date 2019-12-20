@@ -201,3 +201,33 @@ test('createListItem creates and returns a new listItem', async () => {
   expect(res.json).toHaveBeenCalledWith({listItem: {...createdListItem, book}})
   expect(res.json).toHaveBeenCalledTimes(1)
 })
+
+test(`createListItem returns a 400 error if the user already has a list item for the given book`, async () => {
+  const user = buildUser({id: 'FAKE_USER_ID'})
+  const book = buildBook({id: 'FAKE_BOOK_ID'})
+  const existingListItem = buildListItem({ownerId: user.id, bookId: book.id})
+
+  listItemsDB.query.mockResolvedValueOnce([existingListItem])
+
+  const req = buildReq({user, body: {bookId: book.id}})
+  const res = buildRes()
+
+  await listItemsController.createListItem(req, res)
+
+  expect(listItemsDB.query).toHaveBeenCalledWith({
+    ownerId: user.id,
+    bookId: book.id,
+  })
+  expect(listItemsDB.query).toHaveBeenCalledTimes(1)
+
+  expect(res.status).toHaveBeenCalledWith(400)
+  expect(res.status).toHaveBeenCalledTimes(1)
+  expect(res.json.mock.calls[0]).toMatchInlineSnapshot(`
+    Array [
+      Object {
+        "message": "User FAKE_USER_ID already has a list item for the book with the ID FAKE_BOOK_ID",
+      },
+    ]
+  `)
+  expect(res.json).toHaveBeenCalledTimes(1)
+})
