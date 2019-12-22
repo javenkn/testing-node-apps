@@ -23,13 +23,10 @@ api.interceptors.response.use(getData, handleRequestFailure)
 test('auth flow', async () => {
   const {username, password} = loginForm()
 
-  const registerResponse = await api.post(
-    'http://localhost:8000/api/auth/register',
-    {
-      username,
-      password,
-    },
-  )
+  const registerResponse = await api.post('auth/register', {
+    username,
+    password,
+  })
 
   expect(registerResponse.user).toEqual({
     id: expect.any(String),
