@@ -2,8 +2,9 @@
 
 import axios from 'axios'
 import {resetDb} from 'utils/db-utils'
-import {loginForm} from 'utils/generate'
+import {loginForm, buildUser} from 'utils/generate'
 import {getData, handleRequestFailure, resolve} from 'utils/async'
+import * as usersDB from '../db/users'
 import startServer from '../start'
 
 let server, api
@@ -50,10 +51,7 @@ test('auth flow', async () => {
 test('username must be unique', async () => {
   const {username, password} = loginForm()
 
-  await api.post('auth/register', {
-    username,
-    password,
-  })
+  await usersDB.insert(buildUser({username}))
 
   const error = await api
     .post('auth/register', {
