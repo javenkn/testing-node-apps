@@ -62,9 +62,10 @@ test('listItem CRUD', async () => {
 
   const error = await authAPI.get(listItemIdUrl).catch(resolve)
   expect(error.status).toBe(404)
-  expect(error.data).toEqual({
-    message: `No list item was found with the id of ${listItemId}`,
-  })
+  const idlessMessage = error.data.message.replace(listItemId, 'LIST_ITEM_ID')
+  expect(idlessMessage).toMatchInlineSnapshot(
+    `"No list item was found with the id of LIST_ITEM_ID"`,
+  )
 })
 
 /* eslint no-unused-vars:0 */
